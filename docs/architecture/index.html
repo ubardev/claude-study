@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>claude-study — 아키텍처 다이어그램</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f6f7f9;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 24px 40px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p  { font-size: 0.82rem; color: #8b8fa8; margin-top: 4px; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 24px 40px 0;
+      border-bottom: 2px solid #e2e4ea;
+      background: #fff;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #6b7080;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn:hover { color: #1a1a2e; }
+    .tab-btn.active { color: #1a1a2e; border-bottom-color: #4f46e5; }
+
+    .tab-panel { display: none; padding: 40px; }
+    .tab-panel.active { display: block; }
+
+    .panel-header { margin-bottom: 28px; }
+    .panel-header h2 { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+    .panel-header p  { font-size: 0.825rem; color: #6b7080; margin-top: 6px; line-height: 1.6; }
+
+    .diagram-card {
+      background: #fff;
+      border: 1px solid #e2e4ea;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      overflow-x: auto;
+    }
+    .diagram-card .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .legend {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #6b7080;
+    }
+    .legend-dot {
+      width: 12px; height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>claude-study — 아키텍처 다이어그램</h1>
+  <p>React 19 + TypeScript + Vite 한국어 노트 앱 · 자동 생성됨</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" onclick="showTab('tree')">① 컴포넌트 트리</button>
+  <button class="tab-btn" onclick="showTab('state')">② 상태 흐름</button>
+  <button class="tab-btn" onclick="showTab('seq')">③ 데이터 시퀀스</button>
+</nav>
+
+<!-- ① 컴포넌트 트리 -->
+<div id="tab-tree" class="tab-panel active">
+  <div class="panel-header">
+    <h2>컴포넌트 트리 — 렌더 포함 관계 및 Props</h2>
+    <p>
+      실선 화살표는 렌더 포함 관계, 레이블은 전달되는 props / callback입니다.<br>
+      <strong>NotesProvider</strong>는 Context로 하위 트리 전체에 데이터를 공급합니다.
+    </p>
+  </div>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph TD
+    Main["main.tsx\n진입점"]
+    App["App\nselectedNoteId, isCreating"]
+    NP["NotesProvider\nnotes, loading, error\ncreateNote, updateNote, deleteNote"]
+    Layout["Layout\nonNewNote"]
+    NL["NoteList\nselectedNoteId, onSelect"]
+    NE["NoteEditor\nselectedNoteId, isCreating, onDone"]
+    NI["NoteItem\nnote, isSelected, onSelect, onDelete"]
+    CTX(["NotesContext\nContext API"])
+
+    Main --> App
+    App --> NP
+    NP --> Layout
+    Layout --> NL
+    Layout --> NE
+    NL --> NI
+
+    NP -. "provides" .-> CTX
+    NL -. "useNotes()" .-> CTX
+    NE -. "useNotes()" .-> CTX
+
+    style Main fill:#e8eaf6,stroke:#7986cb
+    style App fill:#e3f2fd,stroke:#64b5f6
+    style NP fill:#fce4ec,stroke:#e57373
+    style CTX fill:#fce4ec,stroke:#e57373,stroke-dasharray:5
+    style Layout fill:#e8f5e9,stroke:#81c784
+    style NL fill:#e8f5e9,stroke:#81c784
+    style NE fill:#e8f5e9,stroke:#81c784
+    style NI fill:#e8f5e9,stroke:#81c784
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#7986cb"></div>진입점</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#64b5f6"></div>UI 상태 소유 (App)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e57373"></div>데이터 상태 소유 (Context)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#81c784"></div>UI 컴포넌트</div>
+  </div>
+</div>
+
+<!-- ② 상태 흐름 -->
+<div id="tab-state" class="tab-panel">
+  <div class="panel-header">
+    <h2>상태 흐름 — UI 상태 vs 데이터 상태 분리</h2>
+    <p>
+      <strong>App</strong>은 선택/생성 같은 UI 상태만 소유하고,
+      <strong>NotesContext</strong>는 notes 배열과 서버 통신 상태만 소유합니다.<br>
+      두 레이어는 섞이지 않습니다.
+    </p>
+  </div>
+  <div class="diagram-card">
+    <div class="mermaid">
+graph LR
+    subgraph UI_STATE["UI 상태 레이어 (App)"]
+        S1["selectedNoteId\nstring | null"]
+        S2["isCreating\nboolean"]
+    end
+
+    subgraph DATA_STATE["데이터 상태 레이어 (NotesContext)"]
+        D1["notes\nNote[]"]
+        D2["loading\nboolean"]
+        D3["error\nstring | null"]
+    end
+
+    subgraph ACTIONS["Context 액션 (낙관적 업데이트)"]
+        A1["createNote(title, content)\n→ setNotes(prev ⇒ [...prev, new])"]
+        A2["updateNote(id, updates)\n→ setNotes(prev ⇒ prev.map(...))"]
+        A3["deleteNote(id)\n→ setNotes(prev ⇒ prev.filter(...))"]
+    end
+
+    subgraph API_LAYER["API 레이어 (src/api/notes.ts)"]
+        API["fetch localhost:3001/notes\nGET · POST · PATCH · DELETE"]
+    end
+
+    S1 -->|"selectedNoteId prop"| NE["NoteEditor"]
+    S2 -->|"isCreating prop"| NE
+    S1 -->|"selectedNoteId prop"| NL["NoteList"]
+
+    D1 -->|"notes via useNotes()"| NL
+    D1 -->|"notes via useNotes()"| NE
+    D2 -->|"loading"| NL
+    D3 -->|"error"| NL
+
+    NE -->|"handleSave()"| A1
+    NE -->|"handleSave()"| A2
+    NL -->|"onDelete"| A3
+
+    A1 --> API
+    A2 --> API
+    A3 --> API
+
+    style UI_STATE fill:#e3f2fd,stroke:#64b5f6
+    style DATA_STATE fill:#fce4ec,stroke:#e57373
+    style ACTIONS fill:#fff8e1,stroke:#ffca28
+    style API_LAYER fill:#f3e5f5,stroke:#ba68c8
+    </div>
+  </div>
+</div>
+
+<!-- ③ 데이터 시퀀스 -->
+<div id="tab-seq" class="tab-panel">
+  <div class="panel-header">
+    <h2>데이터 시퀀스 — 노트 생성/수정/삭제 흐름</h2>
+    <p>
+      사용자 액션부터 API 호출, 낙관적 상태 업데이트까지 전체 데이터 흐름을 보여줍니다.<br>
+      에러 발생 시 Context에서 catch하고 컴포넌트는 <code>console.error()</code>로만 처리합니다.
+    </p>
+  </div>
+  <div class="diagram-card">
+    <div class="mermaid">
+sequenceDiagram
+    actor User as 사용자
+    participant NE as NoteEditor
+    participant NL as NoteList / NoteItem
+    participant CTX as NotesContext
+    participant API as api/notes.ts
+    participant SRV as JSON Server :3001
+
+    Note over CTX,SRV: 초기 로딩
+    CTX->>API: fetchNotes()
+    API->>SRV: GET /notes
+    SRV-->>API: Note[]
+    API-->>CTX: Note[]
+    CTX->>CTX: setNotes(data), setLoading(false)
+
+    Note over User,CTX: 노트 생성
+    User->>NE: 제목·내용 입력 후 저장 클릭
+    NE->>NE: setSaving(true)
+    NE->>CTX: createNote(title, content)
+    CTX->>API: createNote({title, content})
+    API->>SRV: POST /notes  (createdAt, updatedAt 포함)
+    SRV-->>API: Note (id 포함)
+    API-->>CTX: newNote
+    CTX->>CTX: setNotes(prev ⇒ [...prev, newNote])
+    CTX-->>NE: resolve
+    NE->>NE: setSaving(false), onDone()
+
+    Note over User,CTX: 노트 수정
+    User->>NE: 내용 변경 후 저장 클릭
+    NE->>CTX: updateNote(id, {title, content})
+    CTX->>API: updateNote(id, updates)
+    API->>SRV: PATCH /notes/:id  (updatedAt 포함)
+    SRV-->>API: updated Note
+    API-->>CTX: updated
+    CTX->>CTX: setNotes(prev ⇒ prev.map(...))
+
+    Note over User,CTX: 노트 삭제
+    User->>NL: 삭제 버튼 클릭
+    NL->>CTX: deleteNote(id)
+    CTX->>API: deleteNote(id)
+    API->>SRV: DELETE /notes/:id
+    SRV-->>API: 204 No Content
+    API-->>CTX: void
+    CTX->>CTX: setNotes(prev ⇒ prev.filter(...))
+
+    Note over NE,CTX: 에러 처리
+    CTX--xNE: throw Error
+    NE->>NE: catch → console.error()
+    </div>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+
+  function showTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
