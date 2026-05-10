@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(open *)"
+      "Bash(open *)",
+      "Bash(npm install *)",
+      "Bash(npx husky *)",
+      "Bash(git add *)",
+      "Bash(npx lint-staged *)"
     ]
   }
 }
