@@ -5,7 +5,12 @@
       "Bash(npm install *)",
       "Bash(npx husky *)",
       "Bash(git add *)",
-      "Bash(npx lint-staged *)"
+      "Bash(npx lint-staged *)",
+      "Bash(echo 'npx --no -- commitlint --edit \"$1\"')",
+      "Bash(chmod +x .husky/commit-msg)",
+      "Bash(npx commitlint *)",
+      "WebFetch(domain:www.trendwidget.app)",
+      "WebSearch"
     ]
   }
 }
